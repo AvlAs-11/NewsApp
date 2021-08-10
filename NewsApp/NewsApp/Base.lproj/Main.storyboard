@@ -24,12 +24,15 @@
                                     <outlet property="delegate" destination="BYZ-38-t0r" id="n5x-Pf-xvg"/>
                                 </connections>
                             </tableView>
-                            <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4Mf-hZ-g0q">
-                                <rect key="frame" x="351" y="89" width="53" height="30"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4Mf-hZ-g0q">
+                                <rect key="frame" x="270" y="89" width="134" height="30"/>
                                 <state key="normal" title="Refresh"/>
                             </button>
-                            <textField opaque="NO" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="k6o-D1-BIL">
-                                <rect key="frame" x="14" y="85" width="334" height="34"/>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Search" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="k6o-D1-BIL">
+                                <rect key="frame" x="10" y="85" width="250" height="34"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="250" id="XvS-S8-NCY"/>
+                                </constraints>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
@@ -48,7 +51,6 @@
                             <constraint firstItem="k6o-D1-BIL" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="10" id="HSq-nQ-LC2"/>
                             <constraint firstItem="4Mf-hZ-g0q" firstAttribute="leading" secondItem="k6o-D1-BIL" secondAttribute="trailing" constant="10" id="JQ8-10-ixN"/>
                             <constraint firstItem="DDg-mY-gXX" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="Sj8-Ij-aMe"/>
-                            <constraint firstItem="4Mf-hZ-g0q" firstAttribute="leading" secondItem="k6o-D1-BIL" secondAttribute="trailing" constant="10" id="dLq-UG-mmR"/>
                             <constraint firstItem="8zt-4Y-gwF" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="dld-Nr-tMX"/>
                             <constraint firstItem="8zt-4Y-gwF" firstAttribute="top" secondItem="k6o-D1-BIL" secondAttribute="bottom" constant="10" id="h9Y-eF-qbX"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="DDg-mY-gXX" secondAttribute="trailing" id="pgR-dz-7cP"/>

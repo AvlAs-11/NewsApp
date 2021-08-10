@@ -11,7 +11,7 @@ class NewsModel {
     let title: String
     let subTitle: String
     let imageURL: URL?
-    var imageData: Data? = nil
+    var imageData: Data?
     
     init(title: String, subTitle: String, imageURL: URL?) {
         self.title = title
