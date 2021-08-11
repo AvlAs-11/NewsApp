@@ -27,8 +27,9 @@ class NewsTableViewCell: UITableViewCell {
     override func layoutSubviews() {
         super.layoutSubviews()
         titleLabel.numberOfLines = 0
-        descriptionLabel.numberOfLines = 0
-        //self.sizeToFit()
+        descriptionLabel.numberOfLines = 4
+        titleLabel.sizeToFit()
+        descriptionLabel.sizeToFit()
     }
     
     func configure(with viewModel: NewsModel) {
