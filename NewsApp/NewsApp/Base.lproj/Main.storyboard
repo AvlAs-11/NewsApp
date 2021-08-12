@@ -42,6 +42,9 @@
                                 <state key="normal" image="arrow.clockwise" catalog="system">
                                     <color key="titleColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 </state>
+                                <connections>
+                                    <action selector="refreshDate:" destination="BYZ-38-t0r" eventType="touchUpInside" id="HVo-xP-p0p"/>
+                                </connections>
                             </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
@@ -62,6 +65,7 @@
                     <connections>
                         <outlet property="newsTableView" destination="8zt-4Y-gwF" id="nJS-KT-Fjj"/>
                         <outlet property="refreshButton" destination="4Mf-hZ-g0q" id="8sO-GN-aI0"/>
+                        <outlet property="refreshDateButton" destination="4Mf-hZ-g0q" id="X14-Kf-Vch"/>
                         <outlet property="searchField" destination="eSW-as-wZW" id="zpj-ul-PeV"/>
                     </connections>
                 </viewController>

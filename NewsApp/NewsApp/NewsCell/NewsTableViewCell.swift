@@ -27,9 +27,10 @@ class NewsTableViewCell: UITableViewCell {
     override func layoutSubviews() {
         super.layoutSubviews()
         titleLabel.numberOfLines = 0
-        descriptionLabel.numberOfLines = 4
-        titleLabel.sizeToFit()
-        descriptionLabel.sizeToFit()
+        descriptionLabel.numberOfLines = 0
+        setShadowForImage()
+//        titleLabel.sizeToFit()
+//        descriptionLabel.sizeToFit()
     }
     
     func configure(with viewModel: NewsModel) {
@@ -50,5 +51,15 @@ class NewsTableViewCell: UITableViewCell {
                 }
             }.resume()
         }
+    }
+    
+    func setShadowForImage() {
+        
+        newsImage.layer.shadowColor = UIColor.black.cgColor
+        newsImage.layer.cornerRadius = 10
+        newsImage.clipsToBounds = true
+        newsImage.layer.shadowRadius = 10
+        newsImage.layer.shadowOpacity = 1
+        newsImage.layer.shadowOffset = CGSize(width: -5, height: -5)
     }
 }

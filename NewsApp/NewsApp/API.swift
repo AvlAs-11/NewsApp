@@ -12,8 +12,9 @@ final class APICaller {
     static let shared = APICaller()
     
     struct Constans {
-        static let  topHeadLinesURL = URL(string: "https://newsapi.org/v2/top-headlines?country=us&apiKey=d7c8194f9692481ab74e05727b68121f")
-        static let searchURL = "https://newsapi.org/v2/everything?sortedBy=popylarity&apiKey=d7c8194f9692481ab74e05727b68121f&q="
+        static let  topHeadLinesURL = URL(string: "https://newsapi.org/v2/everything?from=2021-08-08&to=2021-08-10&sortBy=publishedAt&apiKey=d7c8194f9692481ab74e05727b68121f&pageSize=80&qInTitle=Tesla")
+        static let searchURL = "https://newsapi.org/v2/everything?sortedBy=popylarity&apiKey=d7c8194f9692481ab74e05727b68121f&pageSize=80&qInTitle="
+        static let actualNewsURL = URL(string: "https://newsapi.org/v2/top-headlines?country=ru&apiKey=d7c8194f9692481ab74e05727b68121f&pageSize=80")
     }
     
     private init() {}
@@ -60,6 +61,31 @@ final class APICaller {
                 do {
                     let result = try JSONDecoder().decode(APIResponse.self, from: data)
                     print("Atricles: \(result.articles.count)")
+                    print("TotalResults: \(result.totalResults)")
+                    completion(.success(result.articles))
+                }
+                catch {
+                    completion(.failure(error))
+                }
+            }
+        }
+        
+        task.resume()
+    }
+    
+    public func getActualNews(completion: @escaping (Result<[Article], Error>) -> Void) {
+        guard let url = Constans.actualNewsURL else {
+            return
+        }
+        
+        let task = URLSession.shared.dataTask(with: url) { (data, _, error) in
+            if let error = error {
+                completion(.failure(error))
+            }
+            else if let data = data {
+                do {
+                    let result = try JSONDecoder().decode(APIResponse.self, from: data)
+                    print("Atricles: \(result.articles.count)")
                     completion(.success(result.articles))
                 }
                 catch {
@@ -73,6 +99,7 @@ final class APICaller {
 }
 
 struct APIResponse: Codable {
+    let totalResults: Int
     let articles: [Article]
 }
 
