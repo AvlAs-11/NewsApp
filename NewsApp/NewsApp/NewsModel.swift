@@ -20,8 +20,5 @@ class NewsModel {
         self.subTitle = subTitle
         self.imageURL = imageURL
         self.publishedAt = publishedAt
-        //self.publishedAt =
-//        self.publishedAt = formatter.string(from: publishedAt)
-        //self.publishedAt = publishedAt
     }
 }
