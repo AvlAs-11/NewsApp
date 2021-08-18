@@ -21,24 +21,6 @@ class MainViewController: UIViewController {
     var endDate = Date()
     var lastSeenOnlineDate = Date()
     
-    private func getTopStories() {
-        
-        APICaller.shared.getTopStories { [weak self] result in
-            switch result {
-            case .success(let articles):
-                self?.articles = articles
-                self?.viewModels = articles.compactMap({
-                    NewsModel(title: $0.title, subTitle: $0.description ?? "No description", imageURL: URL(string: $0.urlToImage ?? "https://shmector.com/_ph/18/412122157.png"), publishedAt: $0.publishedAt)
-                })
-                DispatchQueue.main.async {
-                    self?.newsTableView.reloadData()
-                }
-            case .failure(let error):
-                print(error)
-            }
-        }
-    }
-    
     private func getActualNews() {
         let actualDate = Date()
         let formatter = DateFormatter()
@@ -64,28 +46,21 @@ class MainViewController: UIViewController {
     }
     
     @IBAction func refreshDate(_ sender: Any) {
-        print("pressed")
+        newsTableView.setContentOffset(.zero, animated:true)
         var text = "&from="
         let actualDate = Date()
-        print(actualDate)
         let formatter = DateFormatter()
         formatter.dateFormat = "YYYY-MM-dd"
         let actualDateToString = formatter.string(from: actualDate)
-        print(actualDateToString)
         text += actualDateToString
         text += "&to="
         text += actualDateToString
         now = formatter.string(from: actualDate)
-        print("now: \(now!)")
         let calendar = Calendar.current
-        print(endDate)
         endDate = Date()
         endDate = calendar.date(byAdding: .day, value: -7, to: endDate)!
-        
-        print("endDate: \(endDate)")
         let defaults = UserDefaults.standard
         defaults.set(actualDateToString, forKey: "DateKey")
-        //2016-12-08 03:37:22 +0000
         APICaller.shared.getActualNews(with: text) { [weak self] result in
             if text == "endOfWeek" {
                 print("EndOfWeek")
@@ -98,10 +73,7 @@ class MainViewController: UIViewController {
                         NewsModel(title: $0.title, subTitle: $0.description ?? "No description", imageURL: URL(string: $0.urlToImage ?? "https://shmector.com/_ph/18/412122157.png"), publishedAt: $0.publishedAt)
                     })
                     DispatchQueue.main.async {
-//                        self?.newsTableView.beginUpdates()
-                        
                         self?.newsTableView.reloadData()
-//                       self?.newsTableView.endUpdates()
                     }
                 case .failure(let error):
                     print(error)
@@ -111,8 +83,6 @@ class MainViewController: UIViewController {
     
     private func getPrevDay() -> String {
         
-//        let defaults = UserDefaults.standard
-//        let date = defaults.string(forKey: "DateKey")
         var dateForCall : String
         dateForCall = "&from="
         let formatter = DateFormatter()
@@ -120,10 +90,7 @@ class MainViewController: UIViewController {
         formatter.dateFormat = "yyyy-MM-dd"
         var nowToDate = formatter.date(from: now!)
         nowToDate = calendar.date(byAdding: .day, value: -1, to: nowToDate!)
-        print(now!)
         now = formatter.string(from: nowToDate!)
-        
-        print(endDate)
         if nowToDate! <= endDate {
             return "endOfWeek"
         }
@@ -132,36 +99,17 @@ class MainViewController: UIViewController {
         let dateTo = "&&to="
         dateForCall += dateTo
         dateForCall += nowToString
-        print(nowToDate!)
-        print(endDate)
         return dateForCall
     }
     
     private func checkForFirstEntry() {
         let defaults = UserDefaults.standard
         var dateForCheck = defaults.string(forKey: "DateKey")
-//        if dateForCheck == "" {
-//            print("EEEE")
-//            let formatter = DateFormatter()
-//            formatter.dateFormat = "YYYY-MM-dd"
-//            let actualDate = Date()
-//            dateForCheck = formatter.string(from: actualDate)
-//            defaults.set(dateForCheck, forKey: "DateKey")
-//            let calendar = Calendar.current
-//            endDate = calendar.date(byAdding: .day, value: -7, to: endDate)!
-//            getActualNews()
-//        }
-//        else {
-            print(dateForCheck!)
-            let formatter = DateFormatter()
-            formatter.dateFormat = "YYYY-MM-dd"
-//            let formatter = DateFormatter()
-//            formatter.dateFormat = "yyyy/MM/dd HH:mm"
-//            let someDateTime = formatter.date(from: "2016/10/08 22:31")
-            let calendar = Calendar.current
-        //dateForCheck = "2021-08-10"
+        let formatter = DateFormatter()
+        formatter.dateFormat = "YYYY-MM-dd"
+        let calendar = Calendar.current
+        
         guard let date = dateForCheck, !date.isEmpty else {
-                print("EEEE")
                 let formatter = DateFormatter()
                 formatter.dateFormat = "YYYY-MM-dd"
                 let actualDate = Date()
@@ -173,15 +121,11 @@ class MainViewController: UIViewController {
                 getActualNews()
                 return
             }
-        //date = "2021-08-10"
         defaults.set(date, forKey: "DateKey")
         now = defaults.string(forKey: "DateKey")
         endDate = formatter.date(from: date)!
         endDate = calendar.date(byAdding: .day, value: -7, to: endDate)!
-        print(endDate)
-        //let endDateToString = formatter.string(from: endDate)
         getLastSeenNews(with: date)
-        //}
     }
     
     private func getLastSeenNews(with date: String) {
@@ -215,31 +159,19 @@ class MainViewController: UIViewController {
         searchField.delegate = self
         
         checkForFirstEntry()
-//        let x = UserDefaults.standard
-//        x.set("", forKey: "DateKey")
-       
-//        let calendar = Calendar.current
-//        endDate = calendar.date(byAdding: .day, value: -7, to: endDate)!
+        
+        addSwipeforKeyboard()
     }
-
-
 }
 
 extension MainViewController: UITableViewDelegate, UITableViewDataSource {
     
-   public func reload() {
-    
-    }
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return viewModels.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "NewsTableViewCell") as! NewsTableViewCell
-//        let viewModel = viewModels[indexPath.row]
-//        if (viewModel.publishedAt != "2021-07-27T") {
-//            return cell
-//        }
         cell.configure(with: viewModels[indexPath.row])
         return cell
     }
@@ -255,7 +187,7 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
         
         tableView.deselectRow(at: indexPath, animated: true)
         let article = articles[indexPath.row]
-        print("PublishedAt: \(article.publishedAt)")
+
         guard let url = URL(string: article.url ?? "") else {
             return
         }
@@ -265,16 +197,18 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        
         let offset = scrollView.contentOffset
             let bounds = scrollView.bounds
             let size = scrollView.contentSize
             let inset = scrollView.contentInset
             let y = offset.y + bounds.size.height - inset.bottom
             let h = size.height
-//            let reload_distance:CGFloat = 50.0
+      
         guard let text = searchField.text else {
             return
         }
+        
         if y == h && text.isEmpty {
                 print("load more rows")
                 let text = getPrevDay()
@@ -290,16 +224,13 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
                                 NewsModel(title: $0.title, subTitle: $0.description ?? "No description", imageURL: URL(string: $0.urlToImage ?? "https://shmector.com/_ph/18/412122157.png"), publishedAt: $0.publishedAt)
                             })
                             DispatchQueue.main.async {
-        //                        self?.newsTableView.beginUpdates()
-                                
                                 self?.newsTableView.reloadData()
-        //                       self?.newsTableView.endUpdates()
                             }
                         case .failure(let error):
                             print(error)
                         }
                 }
-                //viewModels = 
+              
                   print("EndUpdate")
             }
     }
@@ -308,9 +239,8 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
 extension MainViewController: UISearchBarDelegate {
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        
+        searchField.endEditing(true)
         getSearchStories()
-        
     }
     
     private func getSearchStories() {
@@ -328,15 +258,35 @@ extension MainViewController: UISearchBarDelegate {
                         NewsModel(title: $0.title, subTitle: $0.description ?? "No description", imageURL: URL(string: $0.urlToImage ?? "https://shmector.com/_ph/18/412122157.png"), publishedAt: $0.publishedAt)
                     })
                     DispatchQueue.main.async {
-//                        self?.newsTableView.beginUpdates()
-                        
                         self?.newsTableView.reloadData()
-//                       self?.newsTableView.endUpdates()
                     }
                 case .failure(let error):
                     print(error)
                 }
         }
     }
+}
+
+extension MainViewController: UIGestureRecognizerDelegate {
+    
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        return true
+    }
+    
+    func addSwipeforKeyboard() {
+        let swipeDown = UISwipeGestureRecognizer(target: self, action: #selector(self.hideKeyboardOnSwipe))
+        swipeDown.delegate = self
+        swipeDown.direction =  UISwipeGestureRecognizer.Direction.down
+        let swipeUp = UISwipeGestureRecognizer(target: self, action: #selector(self.hideKeyboardOnSwipe))
+        swipeUp.delegate = self
+        swipeUp.direction = UISwipeGestureRecognizer.Direction.up
+        self.newsTableView.addGestureRecognizer(swipeDown)
+        self.newsTableView.addGestureRecognizer(swipeUp)
+    }
+    
+    @objc func hideKeyboardOnSwipe() {
+            view.endEditing(true)
+        }
+    
 }
 
