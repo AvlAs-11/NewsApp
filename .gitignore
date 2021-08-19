@@ -4,3 +4,6 @@ xcuserdata/
 *.DS_Store
 *.xcworkspace
 *.xcbkptlist
+NewsApp/.DS_Store
+NewsApp/NewsApp.xcodeproj/xcuserdata/pavelavlasov.xcuserdatad/xcdebugger/Breakpoints_v2.xcbkptlist
+NewsApp/NewsApp.xcodeproj/xcuserdata/pavelavlasov.xcuserdatad/xcschemes/xcschememanagement.plist
