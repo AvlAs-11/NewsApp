@@ -6,9 +6,10 @@
 //
 
 import UIKit
+import Kingfisher
 
 class NewsTableViewCell: UITableViewCell {
-
+    
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var descriptionLabel: UILabel!
     @IBOutlet weak var newsImage: UIImageView!
@@ -38,45 +39,18 @@ class NewsTableViewCell: UITableViewCell {
         titleLabel.numberOfLines = 0
         descriptionLabel.text = viewModel.subTitle
         descriptionLabel.numberOfLines = 3
-        
-        if (descriptionLabel.maxNumberOfLines < 4) {
-            showMoreButton.isHidden = true
-        }
-        else {
-            showMoreButton.isHidden = false
-        }
-        
-        if let data = viewModel.imageData {
-            newsImage.image = UIImage(data: data)
-        }
-        else if let url = viewModel.imageURL {
-            URLSession.shared.dataTask(with: url) { [weak self] data, _, error in
-                guard let data = data, error == nil else {
-                    return
-                }
-                viewModel.imageData = data
-                DispatchQueue.main.async {
-                    self?.newsImage.image = UIImage(data: data)
-                }
-            }.resume()
-        }
+        showMoreButton.isHidden = descriptionLabel.maxNumberOfLines < 4
+        newsImage.kf.setImage(with: viewModel.imageURL, placeholder: UIImage(named: "placeholderImage"))
     }
 }
 
 extension UILabel {
     
-    var numberOfVisibleLines: Int {
+    var maxNumberOfLines: Int {
         let maxSize = CGSize(width: frame.size.width, height: CGFloat(MAXFLOAT))
-        let textHeight = sizeThatFits(maxSize).height
+        let text = (self.text ?? "") as NSString
+        let textHeight = text.boundingRect(with: maxSize, options: .usesLineFragmentOrigin, attributes: [.font: font!], context: nil).height
         let lineHeight = font.lineHeight
         return Int(ceil(textHeight / lineHeight))
     }
-    
-    var maxNumberOfLines: Int {
-            let maxSize = CGSize(width: frame.size.width, height: CGFloat(MAXFLOAT))
-            let text = (self.text ?? "") as NSString
-        let textHeight = text.boundingRect(with: maxSize, options: .usesLineFragmentOrigin, attributes: [.font: font!], context: nil).height
-            let lineHeight = font.lineHeight
-            return Int(ceil(textHeight / lineHeight))
-        }
 }

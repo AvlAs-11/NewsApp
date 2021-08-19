@@ -8,36 +8,7 @@
 
 import Foundation
 
-struct APIResponse: Codable {
-    let totalResults: Int
-    let articles: [Article]
-}
-
-struct Article: Codable {
-    let title: String
-    let description: String?
-    let url: String?
-    let urlToImage: String?
-    let publishedAt: String
-    let source: Source
-}
-
-struct SourcesResponse: Codable {
-    let status: String
-    let sources: [Source]
-}
-
-struct Source: Codable {
-    let id: String?
-    let name: String?
-    let description: String?
-    let country: String?
-    let category: String?
-    let url: String?
-}
-
 final class APICaller {
-    static let shared = APICaller()
     
     // first key: d7c8194f9692481ab74e05727b68121f
     // second key:23490e0bf45d40cdb6fc78a2e307a444
@@ -51,9 +22,7 @@ final class APICaller {
         static let actualNewsURL = "https://newsapi.org/v2/everything?domains=wsj.com,techcrunch.com,thenextweb.com&sortBy=publishedAt&language=en&apiKey=ebc1e0f856c54a4ba273198f7140cc94&pageSize=20"
     }
     
-    private init() {}
-    
-    public func getSearchStories(with request: String, completion: @escaping (Result<[Article], Error>) -> Void) {
+    static public func getSearchStories(with request: String, completion: @escaping (Result<[Article], Error>) -> Void) {
         
         guard !request.trimmingCharacters(in: .whitespaces).isEmpty else {
             return
@@ -84,8 +53,8 @@ final class APICaller {
         task.resume()
     }
     
-    public func getPrevStories(with request: String, completion: @escaping (Result<[Article], Error>) -> Void) {
-
+    static public func getPrevStories(with request: String, completion: @escaping (Result<[Article], Error>) -> Void) {
+        
         guard !request.isEmpty else {
             return
         }
@@ -114,7 +83,7 @@ final class APICaller {
         task.resume()
     }
     
-    public func getActualNews(with actualDate: String, completion: @escaping (Result<[Article], Error>) -> Void) {
+    static public func getActualNews(with actualDate: String, completion: @escaping (Result<[Article], Error>) -> Void) {
         
         let urlRequest = Constans.actualNewsURL + actualDate
         

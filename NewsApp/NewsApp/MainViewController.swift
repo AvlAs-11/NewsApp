@@ -9,9 +9,8 @@ import UIKit
 import SafariServices
 
 class MainViewController: UIViewController {
-
+    
     @IBOutlet weak var searchField: UISearchBar!
-    @IBOutlet weak var refreshButton: UIButton!
     @IBOutlet weak var newsTableView: UITableView!
     @IBOutlet weak var refreshDateButton: UIButton!
     
@@ -29,15 +28,16 @@ class MainViewController: UIViewController {
         actualDateToString += formatter.string(from: actualDate)
         actualDateToString += "&to="
         actualDateToString += formatter.string(from: actualDate)
-        APICaller.shared.getActualNews(with: actualDateToString) { [weak self] result in
+        APICaller.getActualNews(with: actualDateToString) { [weak self] result in
+            guard let self = self else { return }
             switch result {
             case .success(let articles):
-                self?.articles = articles
-                self?.viewModels = articles.compactMap({
-                    NewsModel(title: $0.title, subTitle: $0.description ?? "No description", imageURL: URL(string: $0.urlToImage ?? "https://shmector.com/_ph/18/412122157.png"), publishedAt: $0.publishedAt)
+                self.articles = articles
+                self.viewModels = articles.compactMap({
+                    NewsModel(title: $0.title, subTitle: $0.description ?? "No description", imageURL: URL(string: $0.urlToImage ?? ""), publishedAt: $0.publishedAt)
                 })
                 DispatchQueue.main.async {
-                    self?.newsTableView.reloadData()
+                    self.newsTableView.reloadData()
                 }
             case .failure(let error):
                 print(error)
@@ -61,23 +61,23 @@ class MainViewController: UIViewController {
         endDate = calendar.date(byAdding: .day, value: -7, to: endDate)!
         let defaults = UserDefaults.standard
         defaults.set(actualDateToString, forKey: "DateKey")
-        APICaller.shared.getActualNews(with: text) { [weak self] result in
+        APICaller.getActualNews(with: text) { [weak self] result in
             if text == "endOfWeek" {
                 print("EndOfWeek")
                 return
             }
             switch result {
-                case .success(let articles):
-                    self?.articles = articles
-                    self?.viewModels = articles.compactMap({
-                        NewsModel(title: $0.title, subTitle: $0.description ?? "No description", imageURL: URL(string: $0.urlToImage ?? "https://shmector.com/_ph/18/412122157.png"), publishedAt: $0.publishedAt)
-                    })
-                    DispatchQueue.main.async {
-                        self?.newsTableView.reloadData()
-                    }
-                case .failure(let error):
-                    print(error)
+            case .success(let articles):
+                self?.articles = articles
+                self?.viewModels = articles.compactMap({
+                    NewsModel(title: $0.title, subTitle: $0.description ?? "No description", imageURL: URL(string: $0.urlToImage ?? "https://shmector.com/_ph/18/412122157.png"), publishedAt: $0.publishedAt)
+                })
+                DispatchQueue.main.async {
+                    self?.newsTableView.reloadData()
                 }
+            case .failure(let error):
+                print(error)
+            }
         }
     }
     
@@ -110,17 +110,15 @@ class MainViewController: UIViewController {
         let calendar = Calendar.current
         
         guard let date = dateForCheck, !date.isEmpty else {
-                let formatter = DateFormatter()
-                formatter.dateFormat = "YYYY-MM-dd"
-                let actualDate = Date()
-                dateForCheck = formatter.string(from: actualDate)
-                defaults.set(dateForCheck, forKey: "DateKey")
-                let calendar = Calendar.current
-                now = dateForCheck
-                endDate = calendar.date(byAdding: .day, value: -7, to: endDate)!
-                getActualNews()
-                return
-            }
+            let actualDate = Date()
+            dateForCheck = formatter.string(from: actualDate)
+            defaults.set(dateForCheck, forKey: "DateKey")
+            let calendar = Calendar.current
+            now = dateForCheck
+            endDate = calendar.date(byAdding: .day, value: -7, to: endDate)!
+            getActualNews()
+            return
+        }
         defaults.set(date, forKey: "DateKey")
         now = defaults.string(forKey: "DateKey")
         endDate = formatter.date(from: date)!
@@ -133,7 +131,7 @@ class MainViewController: UIViewController {
         dateForCall += date
         dateForCall += "&to="
         dateForCall += date
-        APICaller.shared.getActualNews(with: dateForCall) { [weak self] result in
+        APICaller.getActualNews(with: dateForCall) { [weak self] result in
             switch result {
             case .success(let articles):
                 self?.articles = articles
@@ -187,8 +185,8 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
         
         tableView.deselectRow(at: indexPath, animated: true)
         let article = articles[indexPath.row]
-
-        guard let url = URL(string: article.url ?? "") else {
+        
+        guard let articleURL = article.url, let url = URL(string: articleURL) else {
             return
         }
         
@@ -199,40 +197,37 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         
         let offset = scrollView.contentOffset
-            let bounds = scrollView.bounds
-            let size = scrollView.contentSize
-            let inset = scrollView.contentInset
-            let y = offset.y + bounds.size.height - inset.bottom
-            let h = size.height
-      
+        let bounds = scrollView.bounds
+        let size = scrollView.contentSize
+        let inset = scrollView.contentInset
+        let y = offset.y + bounds.size.height - inset.bottom
+        let h = size.height
+        
         guard let text = searchField.text else {
             return
         }
         
         if y == h && text.isEmpty {
-                print("load more rows")
-                let text = getPrevDay()
-                APICaller.shared.getPrevStories(with: text) { [weak self] result in
-                    if text == "endOfWeek" {
-                        print("EndOfWeek")
-                        return
-                    }
-                    switch result {
-                        case .success(let articles):
-                            self?.articles += articles
-                            self?.viewModels += articles.compactMap({
-                                NewsModel(title: $0.title, subTitle: $0.description ?? "No description", imageURL: URL(string: $0.urlToImage ?? "https://shmector.com/_ph/18/412122157.png"), publishedAt: $0.publishedAt)
-                            })
-                            DispatchQueue.main.async {
-                                self?.newsTableView.reloadData()
-                            }
-                        case .failure(let error):
-                            print(error)
-                        }
+            let text = getPrevDay()
+            APICaller.getPrevStories(with: text) { [weak self] result in
+                if text == "endOfWeek" {
+                    print("EndOfWeek")
+                    return
                 }
-              
-                  print("EndUpdate")
+                switch result {
+                case .success(let articles):
+                    self?.articles += articles
+                    self?.viewModels += articles.compactMap({
+                        NewsModel(title: $0.title, subTitle: $0.description ?? "No description", imageURL: URL(string: $0.urlToImage ?? "https://shmector.com/_ph/18/412122157.png"), publishedAt: $0.publishedAt)
+                    })
+                    DispatchQueue.main.async {
+                        self?.newsTableView.reloadData()
+                    }
+                case .failure(let error):
+                    print(error)
+                }
             }
+        }
     }
 }
 
@@ -250,19 +245,19 @@ extension MainViewController: UISearchBarDelegate {
             return
         }
         
-        APICaller.shared.getSearchStories(with: text) { [weak self] result in
-                switch result {
-                case .success(let articles):
-                    self?.articles = articles
-                    self?.viewModels = articles.compactMap({
-                        NewsModel(title: $0.title, subTitle: $0.description ?? "No description", imageURL: URL(string: $0.urlToImage ?? "https://shmector.com/_ph/18/412122157.png"), publishedAt: $0.publishedAt)
-                    })
-                    DispatchQueue.main.async {
-                        self?.newsTableView.reloadData()
-                    }
-                case .failure(let error):
-                    print(error)
+        APICaller.getSearchStories(with: text) { [weak self] result in
+            switch result {
+            case .success(let articles):
+                self?.articles = articles
+                self?.viewModels = articles.compactMap({
+                    NewsModel(title: $0.title, subTitle: $0.description ?? "No description", imageURL: URL(string: $0.urlToImage ?? "https://shmector.com/_ph/18/412122157.png"), publishedAt: $0.publishedAt)
+                })
+                DispatchQueue.main.async {
+                    self?.newsTableView.reloadData()
                 }
+            case .failure(let error):
+                print(error)
+            }
         }
     }
 }
@@ -285,8 +280,8 @@ extension MainViewController: UIGestureRecognizerDelegate {
     }
     
     @objc func hideKeyboardOnSwipe() {
-            view.endEditing(true)
-        }
+        view.endEditing(true)
+    }
     
 }
 
