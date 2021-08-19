@@ -21,13 +21,6 @@ class MainViewController: UIViewController {
     var lastSeenOnlineDate = Date()
     
     private func getActualNews() {
-//        let actualDate = Date()
-//        let formatter = DateFormatter()
-//        formatter.dateFormat = "YYYY-MM-dd"
-//        var actualDateToString = "&from="
-//        actualDateToString += formatter.string(from: actualDate)
-//        actualDateToString += "&to="
-//        actualDateToString += formatter.string(from: actualDate)
         let actualDate = getDate()
         APICaller.getActualNews(with: actualDate) { [weak self] result in
             guard let self = self else { return }
@@ -41,7 +34,7 @@ class MainViewController: UIViewController {
                     self.newsTableView.reloadData()
                 }
             case .failure(let error):
-                print(error)
+                self.showMessage(title: "Error", message: error.localizedDescription)
             }
         }
     }
@@ -60,7 +53,6 @@ class MainViewController: UIViewController {
         endDate = calendar.date(byAdding: .day, value: -7, to: endDate)!
         let defaults = UserDefaults.standard
         defaults.set(actualDateToString, forKey: "DateKey")
-        print("Date: \(date)")
         return date
     }
     @IBAction func refreshDate(_ sender: Any) {
@@ -79,7 +71,7 @@ class MainViewController: UIViewController {
         nowToDate = calendar.date(byAdding: .day, value: -1, to: nowToDate!)
         now = formatter.string(from: nowToDate!)
         if nowToDate! <= endDate {
-            return "endOfWeek"
+            return ""
         }
         let nowToString = formatter.string(from: nowToDate!)
         dateForCall += nowToString
@@ -97,12 +89,6 @@ class MainViewController: UIViewController {
         let calendar = Calendar.current
         
         guard let date = dateForCheck, !date.isEmpty else {
-//            let actualDate = Date()
-//            dateForCheck = formatter.string(from: actualDate)
-//            defaults.set(dateForCheck, forKey: "DateKey")
-//            let calendar = Calendar.current
-//            now = dateForCheck
-//            endDate = calendar.date(byAdding: .day, value: -7, to: endDate)!
             getActualNews()
             return
         }
@@ -130,7 +116,7 @@ class MainViewController: UIViewController {
                     self.newsTableView.reloadData()
                 }
             case .failure(let error):
-                print(error)
+                self.showMessage(title: "Error", message: error.localizedDescription)
             }
         }
     }
@@ -148,7 +134,14 @@ class MainViewController: UIViewController {
         
         addSwipeforKeyboard()
     }
+    
+    func showMessage(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction.init(title: "OK", style: .default, handler: nil))
+        self.present(alert, animated: true, completion: nil)
+    }
 }
+
 
 extension MainViewController: UITableViewDelegate, UITableViewDataSource {
     
@@ -179,7 +172,6 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
         }
         
         let vc = SFSafariViewController(url: url)
-        print("Published at: \(article.publishedAt)")
         present(vc, animated: true, completion: nil)
     }
     
@@ -199,9 +191,7 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
         if y == h && text.isEmpty {
             let prevDate = getPrevDay()
             APICaller.getPrevStories(with: prevDate) { [weak self] result in
-                if prevDate == "endOfWeek" {
-                    print("EndOfWeek")
-                    
+                if prevDate.isEmpty {
                     return
                 }
                 guard let self = self else { return }
@@ -215,7 +205,7 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
                         self.newsTableView.reloadData()
                     }
                 case .failure(let error):
-                    print(error)
+                    self.showMessage(title: "Error", message: error.localizedDescription)
                 }
             }
         }
@@ -248,7 +238,7 @@ extension MainViewController: UISearchBarDelegate {
                     self.newsTableView.reloadData()
                 }
             case .failure(let error):
-                print(error)
+                self.showMessage(title: "Error", message: error.localizedDescription)
             }
         }
     }

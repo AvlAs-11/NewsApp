@@ -39,8 +39,6 @@ final class APICaller {
             else if let data = data {
                 do {
                     let result = try JSONDecoder().decode(APIResponse.self, from: data)
-                    print("Atricles: \(result.articles.count)")
-                    print("TotalResults: \(result.totalResults)")
                     completion(.success(result.articles))
                 }
                 catch {
@@ -70,8 +68,6 @@ final class APICaller {
             else if let data = data {
                 do {
                     let result = try JSONDecoder().decode(APIResponse.self, from: data)
-                    print("Atricles: \(result.articles.count)")
-                    print("TotalResults: \(result.totalResults)")
                     completion(.success(result.articles))
                 }
                 catch {
@@ -96,7 +92,6 @@ final class APICaller {
             else if let data = data {
                 do {
                     let result = try JSONDecoder().decode(APIResponse.self, from: data)
-                    print("Atricles: \(result.articles.count)")
                     completion(.success(result.articles))
                 }
                 catch {

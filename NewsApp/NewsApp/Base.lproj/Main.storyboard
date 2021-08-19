@@ -30,8 +30,11 @@
                                     <outlet property="delegate" destination="BYZ-38-t0r" id="n5x-Pf-xvg"/>
                                 </connections>
                             </tableView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="News" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DDg-mY-gXX">
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="News" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DDg-mY-gXX">
                                 <rect key="frame" x="5" y="49" width="107.5" height="40"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="40" id="hFx-1m-Mev"/>
+                                </constraints>
                                 <fontDescription key="fontDescription" name="TimesNewRomanPSMT" family="Times New Roman" pointSize="47"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
