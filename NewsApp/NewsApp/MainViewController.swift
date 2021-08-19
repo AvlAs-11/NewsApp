@@ -21,14 +21,15 @@ class MainViewController: UIViewController {
     var lastSeenOnlineDate = Date()
     
     private func getActualNews() {
-        let actualDate = Date()
-        let formatter = DateFormatter()
-        formatter.dateFormat = "YYYY-MM-dd"
-        var actualDateToString = "&from="
-        actualDateToString += formatter.string(from: actualDate)
-        actualDateToString += "&to="
-        actualDateToString += formatter.string(from: actualDate)
-        APICaller.getActualNews(with: actualDateToString) { [weak self] result in
+//        let actualDate = Date()
+//        let formatter = DateFormatter()
+//        formatter.dateFormat = "YYYY-MM-dd"
+//        var actualDateToString = "&from="
+//        actualDateToString += formatter.string(from: actualDate)
+//        actualDateToString += "&to="
+//        actualDateToString += formatter.string(from: actualDate)
+        let actualDate = getDate()
+        APICaller.getActualNews(with: actualDate) { [weak self] result in
             guard let self = self else { return }
             switch result {
             case .success(let articles):
@@ -45,40 +46,26 @@ class MainViewController: UIViewController {
         }
     }
     
-    @IBAction func refreshDate(_ sender: Any) {
-        newsTableView.setContentOffset(.zero, animated:true)
-        var text = "&from="
+    private func getDate() -> String{
+        var date = "&from="
         let actualDate = Date()
         let formatter = DateFormatter()
         formatter.dateFormat = "YYYY-MM-dd"
         let actualDateToString = formatter.string(from: actualDate)
-        text += actualDateToString
-        text += "&to="
-        text += actualDateToString
-        now = formatter.string(from: actualDate)
+        date += actualDateToString
+        date += "&to="
+        date += actualDateToString
+        now = actualDateToString
         let calendar = Calendar.current
-        endDate = Date()
         endDate = calendar.date(byAdding: .day, value: -7, to: endDate)!
         let defaults = UserDefaults.standard
         defaults.set(actualDateToString, forKey: "DateKey")
-        APICaller.getActualNews(with: text) { [weak self] result in
-            if text == "endOfWeek" {
-                print("EndOfWeek")
-                return
-            }
-            switch result {
-            case .success(let articles):
-                self?.articles = articles
-                self?.viewModels = articles.compactMap({
-                    NewsModel(title: $0.title, subTitle: $0.description ?? "No description", imageURL: URL(string: $0.urlToImage ?? "https://shmector.com/_ph/18/412122157.png"), publishedAt: $0.publishedAt)
-                })
-                DispatchQueue.main.async {
-                    self?.newsTableView.reloadData()
-                }
-            case .failure(let error):
-                print(error)
-            }
-        }
+        print("Date: \(date)")
+        return date
+    }
+    @IBAction func refreshDate(_ sender: Any) {
+        newsTableView.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: true)
+        getActualNews()
     }
     
     private func getPrevDay() -> String {
@@ -96,7 +83,7 @@ class MainViewController: UIViewController {
         }
         let nowToString = formatter.string(from: nowToDate!)
         dateForCall += nowToString
-        let dateTo = "&&to="
+        let dateTo = "&to="
         dateForCall += dateTo
         dateForCall += nowToString
         return dateForCall
@@ -104,18 +91,18 @@ class MainViewController: UIViewController {
     
     private func checkForFirstEntry() {
         let defaults = UserDefaults.standard
-        var dateForCheck = defaults.string(forKey: "DateKey")
+        let dateForCheck = defaults.string(forKey: "DateKey")
         let formatter = DateFormatter()
         formatter.dateFormat = "YYYY-MM-dd"
         let calendar = Calendar.current
         
         guard let date = dateForCheck, !date.isEmpty else {
-            let actualDate = Date()
-            dateForCheck = formatter.string(from: actualDate)
-            defaults.set(dateForCheck, forKey: "DateKey")
-            let calendar = Calendar.current
-            now = dateForCheck
-            endDate = calendar.date(byAdding: .day, value: -7, to: endDate)!
+//            let actualDate = Date()
+//            dateForCheck = formatter.string(from: actualDate)
+//            defaults.set(dateForCheck, forKey: "DateKey")
+//            let calendar = Calendar.current
+//            now = dateForCheck
+//            endDate = calendar.date(byAdding: .day, value: -7, to: endDate)!
             getActualNews()
             return
         }
@@ -132,14 +119,15 @@ class MainViewController: UIViewController {
         dateForCall += "&to="
         dateForCall += date
         APICaller.getActualNews(with: dateForCall) { [weak self] result in
+            guard let self = self else { return }
             switch result {
             case .success(let articles):
-                self?.articles = articles
-                self?.viewModels = articles.compactMap({
-                    NewsModel(title: $0.title, subTitle: $0.description ?? "No description", imageURL: URL(string: $0.urlToImage ?? "https://shmector.com/_ph/18/412122157.png"), publishedAt: $0.publishedAt)
+                self.articles = articles
+                self.viewModels = articles.compactMap({
+                    NewsModel(title: $0.title, subTitle: $0.description ?? "No description", imageURL: URL(string: $0.urlToImage ?? ""), publishedAt: $0.publishedAt)
                 })
                 DispatchQueue.main.async {
-                    self?.newsTableView.reloadData()
+                    self.newsTableView.reloadData()
                 }
             case .failure(let error):
                 print(error)
@@ -191,6 +179,7 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
         }
         
         let vc = SFSafariViewController(url: url)
+        print("Published at: \(article.publishedAt)")
         present(vc, animated: true, completion: nil)
     }
     
@@ -208,20 +197,22 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
         }
         
         if y == h && text.isEmpty {
-            let text = getPrevDay()
-            APICaller.getPrevStories(with: text) { [weak self] result in
-                if text == "endOfWeek" {
+            let prevDate = getPrevDay()
+            APICaller.getPrevStories(with: prevDate) { [weak self] result in
+                if prevDate == "endOfWeek" {
                     print("EndOfWeek")
+                    
                     return
                 }
+                guard let self = self else { return }
                 switch result {
                 case .success(let articles):
-                    self?.articles += articles
-                    self?.viewModels += articles.compactMap({
+                    self.articles += articles
+                    self.viewModels += articles.compactMap({
                         NewsModel(title: $0.title, subTitle: $0.description ?? "No description", imageURL: URL(string: $0.urlToImage ?? "https://shmector.com/_ph/18/412122157.png"), publishedAt: $0.publishedAt)
                     })
                     DispatchQueue.main.async {
-                        self?.newsTableView.reloadData()
+                        self.newsTableView.reloadData()
                     }
                 case .failure(let error):
                     print(error)
@@ -246,14 +237,15 @@ extension MainViewController: UISearchBarDelegate {
         }
         
         APICaller.getSearchStories(with: text) { [weak self] result in
+            guard let self = self else { return }
             switch result {
             case .success(let articles):
-                self?.articles = articles
-                self?.viewModels = articles.compactMap({
+                self.articles = articles
+                self.viewModels = articles.compactMap({
                     NewsModel(title: $0.title, subTitle: $0.description ?? "No description", imageURL: URL(string: $0.urlToImage ?? "https://shmector.com/_ph/18/412122157.png"), publishedAt: $0.publishedAt)
                 })
                 DispatchQueue.main.async {
-                    self?.newsTableView.reloadData()
+                    self.newsTableView.reloadData()
                 }
             case .failure(let error):
                 print(error)

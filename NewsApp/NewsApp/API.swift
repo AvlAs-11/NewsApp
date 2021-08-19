@@ -13,7 +13,6 @@ final class APICaller {
     // first key: d7c8194f9692481ab74e05727b68121f
     // second key:23490e0bf45d40cdb6fc78a2e307a444
     // third key: ebc1e0f856c54a4ba273198f7140cc94
-    
     struct Constans {
         static let sampleURL =  "https://newsapi.org/v2/everything?domains=wsj.com,techcrunch.com,thenextweb.com&sortBy=publishedAt&language=en&apiKey=ebc1e0f856c54a4ba273198f7140cc94&pageSize=20&page=1"
         
@@ -90,7 +89,6 @@ final class APICaller {
         guard let url = URL(string: urlRequest) else {
             return
         }
-        
         let task = URLSession.shared.dataTask(with: url) { (data, _, error) in
             if let error = error {
                 completion(.failure(error))
