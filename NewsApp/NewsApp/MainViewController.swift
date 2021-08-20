@@ -26,6 +26,13 @@ class MainViewController: UIViewController {
             guard let self = self else { return }
             switch result {
             case .success(let articles):
+                if articles.isEmpty {
+                    self.articles = [Article]()
+                    self.viewModels = [NewsModel]()
+                    let date = self.getPrevDay()
+                    self.prevDayNews(prevDate: date)
+                    return
+                }
                 self.articles = articles
                 self.viewModels = articles.compactMap({
                     NewsModel(title: $0.title, subTitle: $0.description ?? "No description", imageURL: URL(string: $0.urlToImage ?? ""), publishedAt: $0.publishedAt)
@@ -56,6 +63,7 @@ class MainViewController: UIViewController {
         return date
     }
     @IBAction func refreshDate(_ sender: Any) {
+        searchField.text = ""
         newsTableView.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: true)
         getActualNews()
     }
@@ -108,6 +116,13 @@ class MainViewController: UIViewController {
             guard let self = self else { return }
             switch result {
             case .success(let articles):
+                if articles.isEmpty {
+                    self.articles = [Article]()
+                    self.viewModels = [NewsModel]()
+                    let date = self.getPrevDay()
+                    self.prevDayNews(prevDate: date)
+                    return
+                }
                 self.articles = articles
                 self.viewModels = articles.compactMap({
                     NewsModel(title: $0.title, subTitle: $0.description ?? "No description", imageURL: URL(string: $0.urlToImage ?? ""), publishedAt: $0.publishedAt)
@@ -152,6 +167,15 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "NewsTableViewCell") as! NewsTableViewCell
         cell.configure(with: viewModels[indexPath.row])
+        cell.showMore = { [weak cell] in
+            guard let _ = cell else {
+                return
+            }
+            tableView.beginUpdates()
+            cell!.descriptionLabel.numberOfLines = 0
+            cell!.showMoreButton.isHidden = true
+            tableView.endUpdates()
+        }
         return cell
     }
     
@@ -190,23 +214,27 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
         
         if y == h && text.isEmpty {
             let prevDate = getPrevDay()
-            APICaller.getPrevStories(with: prevDate) { [weak self] result in
-                if prevDate.isEmpty {
-                    return
+            prevDayNews(prevDate: prevDate)
+        }
+    }
+    
+    func prevDayNews(prevDate: String) {
+        APICaller.getPrevStories(with: prevDate) { [weak self] result in
+            if prevDate.isEmpty {
+                return
+            }
+            guard let self = self else { return }
+            switch result {
+            case .success(let articles):
+                self.articles += articles
+                self.viewModels += articles.compactMap({
+                    NewsModel(title: $0.title, subTitle: $0.description ?? "No description", imageURL: URL(string: $0.urlToImage ?? "https://shmector.com/_ph/18/412122157.png"), publishedAt: $0.publishedAt)
+                })
+                DispatchQueue.main.async {
+                    self.newsTableView.reloadData()
                 }
-                guard let self = self else { return }
-                switch result {
-                case .success(let articles):
-                    self.articles += articles
-                    self.viewModels += articles.compactMap({
-                        NewsModel(title: $0.title, subTitle: $0.description ?? "No description", imageURL: URL(string: $0.urlToImage ?? "https://shmector.com/_ph/18/412122157.png"), publishedAt: $0.publishedAt)
-                    })
-                    DispatchQueue.main.async {
-                        self.newsTableView.reloadData()
-                    }
-                case .failure(let error):
-                    self.showMessage(title: "Error", message: error.localizedDescription)
-                }
+            case .failure(let error):
+                self.showMessage(title: "Error", message: error.localizedDescription)
             }
         }
     }

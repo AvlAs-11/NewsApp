@@ -14,23 +14,19 @@ class NewsTableViewCell: UITableViewCell {
     @IBOutlet weak var descriptionLabel: UILabel!
     @IBOutlet weak var newsImage: UIImageView!
     @IBOutlet weak var showMoreButton: UIButton!
+    @IBOutlet weak var backImageView: UIView!
+    var showMore: (()->())?
     
     @IBAction func showMore(_ sender: Any) {
-        
-        let text = self.descriptionLabel.text
-        let tableview = superview as? UITableView
-        self.descriptionLabel.text = text
-        
-        tableview?.beginUpdates()
-        self.descriptionLabel.numberOfLines = 0
-        self.showMoreButton.isHidden = true
-        self.descriptionLabel.text = text
-        tableview?.endUpdates()
-        
+        if let action = showMore {
+            action()
+        }
+       
     }
     
     override func layoutSubviews() {
         super.layoutSubviews()
+        setShadow()
     }
     
     func configure(with viewModel: NewsModel) {
@@ -41,6 +37,13 @@ class NewsTableViewCell: UITableViewCell {
         descriptionLabel.numberOfLines = 3
         showMoreButton.isHidden = descriptionLabel.maxNumberOfLines < 4
         newsImage.kf.setImage(with: viewModel.imageURL, placeholder: UIImage(named: "placeholderImage"))
+    }
+    
+    func setShadow() {
+        backImageView.backgroundColor = .clear
+        backImageView.layer.shadowRadius = 10
+        backImageView.layer.shadowOffset = CGSize(width: -2, height: 15)
+        backImageView.layer.shadowOpacity = 0.7
     }
 }
 
